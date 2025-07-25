@@ -3925,6 +3925,36 @@
 		<file>python-3.14.0b3-amd64.exe</file>
 		<URL>https://www.python.org/ftp/python/3.14.0/python-3.14.0b3-amd64.exe</URL>
 	</version>
+	<version x64="false" webInstall="false" msi="false">
+		<code>3.14.0b4-win32</code>
+		<file>python-3.14.0b4.exe</file>
+		<URL>https://www.python.org/ftp/python/3.14.0/python-3.14.0b4.exe</URL>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
+		<code>3.14.0b4-arm</code>
+		<file>python-3.14.0b4-arm64.exe</file>
+		<URL>https://www.python.org/ftp/python/3.14.0/python-3.14.0b4-arm64.exe</URL>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
+		<code>3.14.0b4</code>
+		<file>python-3.14.0b4-amd64.exe</file>
+		<URL>https://www.python.org/ftp/python/3.14.0/python-3.14.0b4-amd64.exe</URL>
+	</version>
+	<version x64="false" webInstall="false" msi="false">
+		<code>3.14.0rc1-win32</code>
+		<file>python-3.14.0rc1.exe</file>
+		<URL>https://www.python.org/ftp/python/3.14.0/python-3.14.0rc1.exe</URL>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
+		<code>3.14.0rc1-arm</code>
+		<file>python-3.14.0rc1-arm64.exe</file>
+		<URL>https://www.python.org/ftp/python/3.14.0/python-3.14.0rc1-arm64.exe</URL>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
+		<code>3.14.0rc1</code>
+		<file>python-3.14.0rc1-amd64.exe</file>
+		<URL>https://www.python.org/ftp/python/3.14.0/python-3.14.0rc1-amd64.exe</URL>
+	</version>
 	<version x64="true" webInstall="false" msi="false">
 		<code>pypy3.7-v7.3.4-win64</code>
 		<file>pypy3.7-v7.3.4-win64.zip</file>
@@ -4064,6 +4094,12 @@
 		<zipRootDir>pypy2.7-v7.3.11-win64</zipRootDir>
 	</version>
 	<version x64="true" webInstall="false" msi="false">
+		<code>pypy2.7-v7.3.12-win64</code>
+		<file>pypy2.7-v7.3.12-win64.zip</file>
+		<URL>https://downloads.python.org/pypy/pypy2.7-v7.3.12-win64.zip</URL>
+		<zipRootDir>pypy2.7-v7.3.12-win64</zipRootDir>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
 		<code>pypy3.10-v7.3.12-win64</code>
 		<file>pypy3.10-v7.3.12-win64.zip</file>
 		<URL>https://downloads.python.org/pypy/pypy3.10-v7.3.12-win64.zip</URL>
@@ -4074,12 +4110,6 @@
 		<file>pypy3.9-v7.3.12-win64.zip</file>
 		<URL>https://downloads.python.org/pypy/pypy3.9-v7.3.12-win64.zip</URL>
 		<zipRootDir>pypy3.9-v7.3.12-win64</zipRootDir>
-	</version>
-	<version x64="true" webInstall="false" msi="false">
-		<code>pypy2.7-v7.3.12-win64</code>
-		<file>pypy2.7-v7.3.12-win64.zip</file>
-		<URL>https://downloads.python.org/pypy/pypy2.7-v7.3.12-win64.zip</URL>
-		<zipRootDir>pypy2.7-v7.3.12-win64</zipRootDir>
 	</version>
 	<version x64="true" webInstall="false" msi="false">
 		<code>pypy3.10-v7.3.13-win64</code>
@@ -4202,6 +4232,18 @@
 		<zipRootDir>pypy2.7-v7.3.19-win64</zipRootDir>
 	</version>
 	<version x64="true" webInstall="false" msi="false">
+		<code>pypy3.11-v7.3.20-win64</code>
+		<file>pypy3.11-v7.3.20-win64.zip</file>
+		<URL>https://downloads.python.org/pypy/pypy3.11-v7.3.20-win64.zip</URL>
+		<zipRootDir>pypy3.11-v7.3.20-win64</zipRootDir>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
+		<code>pypy2.7-v7.3.20-win64</code>
+		<file>pypy2.7-v7.3.20-win64.zip</file>
+		<URL>https://downloads.python.org/pypy/pypy2.7-v7.3.20-win64.zip</URL>
+		<zipRootDir>pypy2.7-v7.3.20-win64</zipRootDir>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
 		<code>graalpy-23.1.0-windows-amd64</code>
 		<file>graalpy-23.1.0-windows-amd64.zip</file>
 		<URL>https://github.com/oracle/graalpython/releases/download/graal-23.1.0/graalpy-23.1.0-windows-amd64.zip</URL>
@@ -4266,5 +4308,11 @@
 		<file>graalpy-24.2.1-windows-amd64.zip</file>
 		<URL>https://github.com/oracle/graalpython/releases/download/graal-24.2.1/graalpy-24.2.1-windows-amd64.zip</URL>
 		<zipRootDir>graalpy-24.2.1-windows-amd64</zipRootDir>
+	</version>
+	<version x64="true" webInstall="false" msi="false">
+		<code>graalpy-24.2.2-windows-amd64</code>
+		<file>graalpy-24.2.2-windows-amd64.zip</file>
+		<URL>https://github.com/oracle/graalpython/releases/download/graal-24.2.2/graalpy-24.2.2-windows-amd64.zip</URL>
+		<zipRootDir>graalpy-24.2.2-windows-amd64</zipRootDir>
 	</version>
 </versions>
