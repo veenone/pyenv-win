@@ -15,6 +15,7 @@ Contributors and Interested people can join us on @[Slack](https://join.slack.co
 - [pyenv](#pyenv)
 - [pyenv-win commands](#pyenv-win-commands)
 - [Installation](#installation)
+- [Nexus Offline Installation](#nexus-offline-installation)
 - [Validate installation](#validate-installation)
 - [Usage](#usage)
 - [How to update pyenv](#how-to-update-pyenv)
@@ -98,6 +99,84 @@ Currently we support following ways, choose any of your comfort:
   - [check announcements](#announcements)
 
 Please see the [Installation](./docs/installation.md) page for more details.
+
+## Nexus Offline Installation
+
+For corporate environments with limited internet access, pyenv-win supports offline Python installer downloads from Nexus repositories.
+
+### Install pyenv-win with Nexus Support
+
+```powershell
+# Install from default feat branch with Nexus support
+.\install-pyenv-win.nexus.ps1
+
+# Install with custom Nexus server
+.\install-pyenv-win.nexus.ps1 -NexusUrl "https://nexus.company.com/repository/python-distribution"
+
+# Install from local repository (for testing modifications)
+.\install-pyenv-win.nexus.ps1 -LocalPath "C:\github\pyenv-win"
+
+# Install from specific branch
+.\install-pyenv-win.nexus.ps1 -Branch "master"
+```
+
+### Configure Nexus Server
+
+After installation, the script automatically creates configuration files:
+
+- `~\.pyenv\pyenv-win\etc\install.ini` - Contains Nexus URL configuration
+- `~\.pyenv\mirrors.txt` - Mirror servers list with Nexus as primary source
+
+### Using Offline Installation
+
+```bash
+# Install Python versions from Nexus server
+pyenv install --offline 3.11.8
+pyenv install --offline 3.12.2
+
+# List available versions (includes offline sources)
+pyenv install -l
+
+# Install multiple versions offline
+pyenv install --offline 3.10.11 3.11.8 3.12.2
+```
+
+### Nexus Repository Structure
+
+Your Nexus repository should have the following structure:
+```
+python-distribution/
+├── 3.10.11/
+│   ├── python-3.10.11-win32.exe
+│   └── python-3.10.11-win64.exe
+├── 3.11.8/
+│   ├── python-3.11.8-win32.exe
+│   └── python-3.11.8-win64.exe
+└── 3.12.2/
+    ├── python-3.12.2-win32.exe
+    └── python-3.12.2-win64.exe
+```
+
+### Additional Features
+
+- **Automatic fallback**: If offline installation fails, pyenv-win falls back to online sources
+- **Version caching**: Downloaded installers are cached for faster subsequent installations
+- **SSL support**: Configure custom CA certificates or disable SSL verification for corporate proxies
+- **Local modifications**: Install directly from local git repository for testing
+
+### Examples for Corporate Environment
+
+```bash
+# Quiet installation with offline support
+pyenv install --offline --quiet 3.11.8
+
+# Install with architecture specification
+pyenv install --offline --32only 3.10.11
+pyenv install --offline --64only 3.12.2
+
+# Clear cache to free space
+pyenv install --clear
+```
 
 ## Validate installation
 

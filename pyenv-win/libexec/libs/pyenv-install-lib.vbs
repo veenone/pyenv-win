@@ -44,6 +44,7 @@ Const IP_InstallPath = 7
 Const IP_InstallFile = 8
 Const IP_Quiet = 9
 Const IP_Dev = 10
+Const IP_Offline = 11
 
 Dim regexVer
 Dim regexVerArch
@@ -513,4 +514,44 @@ Function TryResolveVersion(prefix, known)
     If resolved = "" Then resolved = prefix
 
     TryResolveVersion = resolved
+End Function
+
+' Get Nexus server URL from configuration
+Function GetNexusServer()
+    Dim configFile, nexusUrl
+    configFile = strDirRoot & "\etc\install.ini"
+    nexusUrl = "http://10.88.2.40:8081/repository/python-distribution"  ' Default value
+    
+    If objfs.FileExists(configFile) Then
+        Dim iniFile, line, lines
+        Set iniFile = objfs.OpenTextFile(configFile, 1)
+        Do While Not iniFile.AtEndOfStream
+            line = Trim(iniFile.ReadLine)
+            If InStr(line, "python-build-url") > 0 And InStr(line, "=") > 0 Then
+                nexusUrl = Trim(Split(line, "=")(1))
+                Exit Do
+            End If
+        Loop
+        iniFile.Close
+    End If
+    
+    GetNexusServer = nexusUrl
+End Function
+
+' Build Nexus download URL for Python installer
+Function BuildNexusUrl(version, filename)
+    Dim nexusBase, cleanVersion
+    nexusBase = GetNexusServer()
+    
+    ' Extract clean version (e.g., "3.11.8-win32" -> "3.11.8")
+    cleanVersion = version
+    If InStr(cleanVersion, "-win32") > 0 Then
+        cleanVersion = Replace(cleanVersion, "-win32", "")
+    End If
+    If InStr(cleanVersion, "-win64") > 0 Then
+        cleanVersion = Replace(cleanVersion, "-win64", "")
+    End If
+    
+    ' Build URL: nexus-base/version/filename
+    BuildNexusUrl = nexusBase & "/" & cleanVersion & "/" & filename
 End Function
