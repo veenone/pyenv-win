@@ -21,6 +21,8 @@ For Each mirror In mirrors
     WScript.Echo ":: [Info] ::  Mirror: " & mirror
 Next
 
+WScript.Echo ":: [Info] ::  Nexus Server: " & GetNexusServer()
+
 Sub ShowHelp()
     ' WScript.echo "kkotari: pyenv-install.vbs..!"
     WScript.Echo "Usage: pyenv install [-s] [-f] <version> [<version> ...] [-r|--register]"
@@ -38,6 +40,7 @@ Sub ShowHelp()
     WScript.Echo "  --32only               Installs only 32bit Python using -a/--all switch, no effect on 32-bit windows."
     WScript.Echo "  --64only               Installs only 64bit Python using -a/--all switch, no effect on 32-bit windows."
     WScript.Echo "  --dev                  Installs precompiled standard libraries, debug symbols, and debug binaries (only applies to web installer)."
+    WScript.Echo "  --offline              Download Python installers from Nexus3 server instead of internet"
     WScript.Echo "  --help                 Help, list of options allowed on pyenv install"
     WScript.Echo ""
     WScript.Quit 0
@@ -68,10 +71,22 @@ End Sub
 
 Sub download(params)
     ' WScript.echo "kkotari: pyenv-install.vbs download..!"
-    WScript.Echo ":: [Downloading] ::  " & params(LV_Code) & " ..."
-    WScript.Echo ":: [Downloading] ::  From " & params(LV_URL)
+    Dim finalUrl
+    
+    If params(IP_Offline) Then
+        ' Use Nexus3 server for offline downloads
+        finalUrl = BuildNexusUrl(params(LV_Code), params(LV_FileName))
+        WScript.Echo ":: [Downloading] ::  " & params(LV_Code) & " (offline mode)..."
+        WScript.Echo ":: [Downloading] ::  From Nexus: " & finalUrl
+    Else
+        ' Use default URL for online downloads
+        finalUrl = params(LV_URL)
+        WScript.Echo ":: [Downloading] ::  " & params(LV_Code) & " ..."
+        WScript.Echo ":: [Downloading] ::  From " & finalUrl
+    End If
+    
     WScript.Echo ":: [Downloading] ::  To   " & params(IP_InstallFile)
-    DownloadFile params(LV_URL), params(IP_InstallFile)
+    DownloadFile finalUrl, params(IP_InstallFile)
 End Sub
 
 Function deepExtract(params, web)
@@ -362,6 +377,7 @@ Sub main(arg)
     Dim optDev
     Dim optReg
     Dim optClear
+    Dim optOffline
     Dim installVersions
 
     optForce = False
@@ -373,6 +389,7 @@ Sub main(arg)
     opt64 = False
     optDev = False
     optReg = False
+    optOffline = False
     Set installVersions = CreateObject("Scripting.Dictionary")
 
     For idx = 0 To arg.Count - 1
@@ -395,6 +412,7 @@ Sub main(arg)
             Case "--dev"            optDev = True
             Case "-r"               optReg = True
             Case "--register"       optReg = True
+            Case "--offline"        optOffline = True
             Case Else
                 installVersions.Item(TryResolveVersion(arg(idx), True)) = Empty
         End Select
@@ -477,6 +495,36 @@ Sub main(arg)
             End If
         Next
     Else
+        ' Process individual versions and convert to 32-bit if --32only is specified
+        If opt32 Then
+            Dim tempVersions
+            Set tempVersions = CreateObject("Scripting.Dictionary")
+            For Each version In installVersions.Keys
+                Dim convertedVersion
+                convertedVersion = version
+                ' Force add -win32 suffix if --32only is specified and not already present
+                If Right(LCase(convertedVersion), 6) <> "-win32" Then
+                    convertedVersion = convertedVersion & "-win32"
+                End If
+                tempVersions.Item(convertedVersion) = Empty
+            Next
+            Set installVersions = tempVersions
+        ElseIf opt64 Then
+            ' Process individual versions for --64only (remove -win32 suffix if present)
+            Dim tempVersions64
+            Set tempVersions64 = CreateObject("Scripting.Dictionary")
+            For Each version In installVersions.Keys
+                Dim convertedVersion64
+                convertedVersion64 = version
+                ' Remove -win32 suffix if --64only is specified and present
+                If Right(LCase(convertedVersion64), 6) = "-win32" Then
+                    convertedVersion64 = Left(convertedVersion64, Len(convertedVersion64) - 6)
+                End If
+                tempVersions64.Item(convertedVersion64) = Empty
+            Next
+            Set installVersions = tempVersions64
+        End If
+        
         If installVersions.Count = 0 Then
             Dim ary
             ' TODO Should we handle many versions here?
@@ -519,7 +567,8 @@ Sub main(arg)
                 strDirVers &"\"& verDef(LV_Code), _
                 strDirCache &"\"& verDef(LV_FileName), _
                 optQuiet, _
-                optDev _
+                optDev, _
+                optOffline _
             )
             If optForce Then clear(installParams)
             extract installParams, optReg
