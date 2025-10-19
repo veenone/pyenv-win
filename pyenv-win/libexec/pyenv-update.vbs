@@ -35,19 +35,27 @@ Sub EnsureBaseURL(ByRef html, ByVal URL)
     Dim head
     Dim base
 
+    On Error Resume Next
     Set head = html.getElementsByTagName("head")(0)
-    If head Is Nothing Then
+    If head Is Nothing Or Err.Number <> 0 Then
+        Err.Clear
         Set head = html.createElement("head")
-        html.insertBefore html.body, head
+        If Not html.body Is Nothing Then
+            html.insertBefore html.body, head
+        ElseIf Not html.documentElement Is Nothing Then
+            html.documentElement.appendChild head
+        End If
     End If
 
     Set base = head.getElementsByTagName("base")(0)
-    If base Is Nothing Then
+    If base Is Nothing Or Err.Number <> 0 Then
+        Err.Clear
         If Len(URL) And Right(URL, 1) <> "/" Then URL = URL &"/"
         Set base = html.createElement("base")
         base.href = URL
         head.appendChild base
     End If
+    On Error GoTo 0
 End Sub
 
 Function CollectionToArray(collection) _
@@ -104,7 +112,18 @@ Function ScanForVersions(URL, optIgnore, ByRef pageCount)
             WScript.Quit 1
         End If
 
-        objHTML.write .responseText
+        ' Workaround for htmlfile.write compatibility on modern Windows - use document property
+        On Error Resume Next
+        Dim objDoc
+        If TypeName(objHTML.parentWindow) <> "Nothing" And Not objHTML.parentWindow Is Nothing Then
+            Set objDoc = objHTML.parentWindow.document
+        Else
+            Set objDoc = objHTML
+        End If
+        objDoc.write .responseText
+        objDoc.close
+        On Error GoTo 0
+
         pageCount = pageCount + 1
     End With
     EnsureBaseURL objHTML, URL
@@ -141,11 +160,20 @@ Sub main(arg)
     Dim pageCount
     pageCount = 0
 
+    ' Load existing cache to merge with new versions
+    Dim existingVersions
+    Set existingVersions = CreateObject("Scripting.Dictionary")
+    If objfs.FileExists(strDBFile) Then
+        Set existingVersions = LoadVersionsXML(strDBFile)
+        WScript.Echo ":: [Info] ::  Loaded "& existingVersions.Count &" existing versions from cache"
+    End If
+
     Dim installers1
     Set installers1 = CreateObject("Scripting.Dictionary")
 
     For Each mirror In mirrors
         Set objHTML = CreateObject("htmlfile")
+        Dim responseText
         With objweb
             On Error Resume Next
             .Open "GET", mirror, False
@@ -169,7 +197,21 @@ Sub main(arg)
                 WScript.Quit 1
             End If
 
-            objHTML.write .responseText
+            ' Store responseText for potential JSON parsing
+            responseText = .responseText
+
+            ' Workaround for htmlfile.write compatibility on modern Windows - use document property
+            On Error Resume Next
+            Dim objDoc
+            If TypeName(objHTML.parentWindow) <> "Nothing" And Not objHTML.parentWindow Is Nothing Then
+                Set objDoc = objHTML.parentWindow.document
+            Else
+                Set objDoc = objHTML
+            End If
+            objDoc.write responseText
+            objDoc.close
+            On Error GoTo 0
+
             pageCount = pageCount + 1
         End With
         EnsureBaseURL objHTML, mirror
@@ -177,10 +219,15 @@ Sub main(arg)
         Dim link
         Dim version
         Dim matches
-        If objHTML.links.Length = 0 Then
-            ' Assume we're dealing with JSON
+        On Error Resume Next
+        Dim hasLinks
+        hasLinks = (objHTML.links.Length > 0)
+        On Error GoTo 0
+
+        If Not hasLinks Then
+            ' Assume we're dealing with JSON - use original responseText
             Dim match
-            Set matches = regexJsonUrl.Execute(objHTML.body.innerHTML)
+            Set matches = regexJsonUrl.Execute(responseText)
             For Each match in matches
                 ' we matched: Array([url], [filename], [ziproot], [major], [minor], [patch], [x64], [ARM])
                 ' we need: Array([filename], [url], Array([major], [minor], [patch], [rel], [rel_num], [x64], [ARM], [webinstall], [ext], [ziproot]))
@@ -199,6 +246,29 @@ Sub main(arg)
             Next
         End If
     Next
+
+    ' Merge existing versions with newly scanned versions
+    ' Existing versions won't overwrite newly scanned ones (new data is preferred)
+    Dim existingCode, existingData, existingFileName
+    For Each existingCode In existingVersions.Keys
+        existingData = existingVersions(existingCode)
+        existingFileName = existingData(LV_FileName)
+        ' Only add if not already found in new scan
+        If Not installers1.Exists(existingFileName) Then
+            ' Convert from LoadVersionsXML format to installer format
+            ' Need to parse the filename to get version components
+            Dim existingMatches
+            Set existingMatches = regexFile.Execute(existingFileName)
+            If existingMatches.Count = 1 Then
+                installers1(existingFileName) = Array( _
+                    existingFileName, _
+                    existingData(LV_URL), _
+                    CollectionToArray(existingMatches(0).SubMatches) _
+                )
+            End If
+        End If
+    Next
+    WScript.Echo ":: [Info] ::  Merged to "& installers1.Count &" total versions"
 
     ' Now remove any duplicate versions that have the offline installer (it's prefered)
     Dim minVers

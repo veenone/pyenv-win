@@ -21,7 +21,7 @@ For Each mirror In mirrors
     WScript.Echo ":: [Info] ::  Mirror: " & mirror
 Next
 
-WScript.Echo ":: [Info] ::  Nexus Server: " & GetNexusServer()
+' WScript.Echo ":: [Info] ::  Nexus Server: " & GetNexusServer()
 
 Sub ShowHelp()
     ' WScript.echo "kkotari: pyenv-install.vbs..!"
@@ -364,7 +364,7 @@ Sub extract(params, register)
 End Sub
 
 Sub main(arg)
-    ' WScript.echo "kkotari: pyenv-install.vbs Main..!"
+    WScript.echo "DEBUG: Main function called with "& arg.Count &" arguments"
 
     Dim idx
     Dim optForce
@@ -392,7 +392,9 @@ Sub main(arg)
     optOffline = False
     Set installVersions = CreateObject("Scripting.Dictionary")
 
+    WScript.echo "DEBUG: Starting argument parsing loop"
     For idx = 0 To arg.Count - 1
+        WScript.echo "DEBUG: Processing arg "& idx &": "& arg(idx)
         Select Case arg(idx)
             Case "--help"           ShowHelp
             Case "-l"               optList = True
@@ -438,7 +440,9 @@ Sub main(arg)
 
     Dim versions
     Dim version
+    WScript.Echo "DEBUG: About to load versions XML (second time)"
     Set versions = LoadVersionsXML(strDBFile)
+    WScript.Echo "DEBUG: Versions loaded, count: "& versions.Count
     If versions.Count = 0 Then
         WScript.Echo "pyenv-install: no definitions in local database"
         WScript.Echo
@@ -446,6 +450,7 @@ Sub main(arg)
         WScript.Quit 1
     End If
 
+    WScript.Echo "DEBUG: optList = "& optList
     If optList Then
         For Each version In versions.Keys
             WScript.Echo version
@@ -476,6 +481,7 @@ Sub main(arg)
         WScript.Quit delError
     End If
 
+    WScript.Echo "DEBUG: Past optClear block, optAll = "& optAll
     If optAll Then
         ' Add all versions, but only 32-bit versions for 32-bit platforms.
         ' --32only/--64only is disabled on 32-bit platforms.
@@ -538,8 +544,14 @@ Sub main(arg)
     End If
 
     ' Pre-check if all versions to install exist.
+    WScript.Echo "DEBUG: About to pre-check versions. installVersions.Count = "& installVersions.Count
     For Each version In installVersions.Keys
-        If Not versions.Exists(version) Then
+        WScript.Echo "DEBUG: Pre-checking version: "& version
+        WScript.Echo "DEBUG: Checking if versions.Exists("& version &")"
+        Dim versionExists
+        versionExists = versions.Exists(version)
+        WScript.Echo "DEBUG: versions.Exists returned: "& versionExists
+        If Not versionExists Then
             WScript.Echo "pyenv-install: definition not found: "& version
             WScript.Echo
             WScript.Echo "See all available versions with `pyenv install --list`."
@@ -553,9 +565,13 @@ Sub main(arg)
     Dim installed
     Set installed = CreateObject("Scripting.Dictionary")
 
+    WScript.Echo "DEBUG: About to start installation loop"
     For Each version In installVersions.Keys
+        WScript.Echo "DEBUG: Processing version for installation: "& version
         If Not installed.Exists(version) Then
+            WScript.Echo "DEBUG: Getting version definition for: "& version
             verDef = versions(version)
+            WScript.Echo "DEBUG: verDef retrieved, building installParams array"
             installParams = Array( _
                 verDef(LV_Code), _
                 verDef(LV_FileName), _
@@ -570,12 +586,17 @@ Sub main(arg)
                 optDev, _
                 optOffline _
             )
+            WScript.Echo "DEBUG: installParams array built. optForce = "& optForce
             If optForce Then clear(installParams)
+            WScript.Echo "DEBUG: About to call extract()"
             extract installParams, optReg
+            WScript.Echo "DEBUG: extract() returned"
             installed(version) = Empty
         End If
     Next
+    WScript.Echo "DEBUG: Installation loop complete, about to call Rehash()"
     Rehash
+    WScript.Echo "DEBUG: Rehash() complete, exiting main()"
 End Sub
 
 main(WScript.Arguments)

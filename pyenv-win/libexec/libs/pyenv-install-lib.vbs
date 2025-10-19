@@ -44,6 +44,7 @@ Const IP_InstallPath = 7
 Const IP_InstallFile = 8
 Const IP_Quiet = 9
 Const IP_Dev = 10
+Const IP_Offline = 11
 
 Dim regexVer
 Dim regexVerArch
@@ -176,7 +177,7 @@ strDBSchema = _
 
 ' Load versions xml to pyenv
 Function LoadVersionsXML(xmlPath)
-    ' WScript.echo "kkotari: pyenv-install-lib.vbs LoadVersionsXML..!"
+    WScript.echo "DEBUG: LoadVersionsXML called with path: "& xmlPath
     Dim dbSchema
     Dim doc
     Dim schemaError
@@ -184,20 +185,28 @@ Function LoadVersionsXML(xmlPath)
     Set dbSchema = CreateObject("Msxml2.DOMDocument.6.0")
     Set doc = CreateObject("Msxml2.DOMDocument.6.0")
 
-    If Not objfs.FileExists(xmlPath) Then Exit Function
+    If Not objfs.FileExists(xmlPath) Then
+        WScript.echo "DEBUG: XML file does not exist"
+        Exit Function
+    End If
+    WScript.echo "DEBUG: XML file exists"
 
     With dbSchema
         .validateOnParse = False
         .resolveExternals = False
         .loadXML strDBSchema
     End With
+    WScript.echo "DEBUG: Schema loaded"
 
     With doc
         Set .schemas = CreateObject("Msxml2.XMLSchemaCache.6.0")
         .schemas.add "", dbSchema
         .validateOnParse = False
+        WScript.echo "DEBUG: About to load XML file..."
         .load xmlPath
+        WScript.echo "DEBUG: XML file loaded, now validating..."
         Set schemaError = .validate
+        WScript.echo "DEBUG: Validation complete"
     End With
 
     With schemaError
@@ -513,4 +522,40 @@ Function TryResolveVersion(prefix, known)
     If resolved = "" Then resolved = prefix
 
     TryResolveVersion = resolved
+End Function
+
+' Get Nexus3 server URL from environment variable
+Function GetNexusServer()
+    GetNexusServer = objws.Environment("Process")("PYENV_NEXUS_SERVER")
+    If GetNexusServer = "" Then
+        GetNexusServer = "Not configured (set PYENV_NEXUS_SERVER environment variable)"
+    End If
+End Function
+
+' Build Nexus3 download URL for a Python installer
+Function BuildNexusUrl(version, filename)
+    Dim nexusServer
+    nexusServer = objws.Environment("Process")("PYENV_NEXUS_SERVER")
+
+    If nexusServer = "" Then
+        WScript.Echo ":: [Error] :: PYENV_NEXUS_SERVER environment variable is not set"
+        WScript.Quit 1
+    End If
+
+    ' Extract version number from version code (e.g., "3.10.11" from "3.10.11" or "3.10.11-win32")
+    Dim versionNumber
+    versionNumber = version
+    If InStr(versionNumber, "-win32") > 0 Then
+        versionNumber = Replace(versionNumber, "-win32", "")
+    End If
+    If InStr(versionNumber, "-arm") > 0 Then
+        versionNumber = Replace(versionNumber, "-arm", "")
+    End If
+
+    ' Build URL in format: {nexusServer}/{version}/{filename}
+    If Right(nexusServer, 1) = "/" Then
+        BuildNexusUrl = nexusServer & versionNumber & "/" & filename
+    Else
+        BuildNexusUrl = nexusServer & "/" & versionNumber & "/" & filename
+    End If
 End Function
