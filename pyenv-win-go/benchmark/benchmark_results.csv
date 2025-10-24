@@ -1,6 +1,0 @@
-"Test","VBScript_Avg","Go_Avg","Speedup"
-"Version Display","27.95","16.08","1.74x"
-"List Commands","2.45","15.24","0.16x"
-"List Versions","2.53","15.99","0.16x"
-"Show Help","2.12","14.41","0.15x"
-"List Available (--list)","2.9","14.56","0.2x"
