@@ -1,0 +1,27 @@
+{
+  "nexus": {
+    "url": "https://i2j6nexus2v0001.corp.idemia.com",
+    "user": "admin",
+    "password": "admin",
+    "repo": "python-binaries",
+    "use_token": false,
+    "verify_ssl": false,
+    "ca_bundle" :  "C:/certs/nexus/i2j6nexus2v0001.corp.idemia.com.pem"
+  },
+  "download": {
+    "cache_dir": "",
+    "max_retries": 3,
+    "retry_delay_ms": 1000,
+    "timeout_seconds": 600,
+    "chunk_size_mb": 10,
+    "verify_checksum": false
+  },
+  "behavior": {
+    "skip_existing": true,
+    "delete_after_sync": false,
+    "parallel_uploads": 0,
+    "delay_between_ms": 2000,
+    "include_patterns": [],
+    "exclude_patterns": []
+  }
+}

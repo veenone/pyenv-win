@@ -1,0 +1,33 @@
+{
+  "nexus": {
+    "url": "https://nexus.company.com",
+    "user": "admin",
+    "password": "your-password-here",
+    "repo": "python-binaries",
+    "use_token": false,
+    "token": "",
+    "verify_ssl": true,
+    "ca_bundle": "C:/path/to/ca-bundle.crt",
+    "client_cert": "",
+    "client_key": "",
+    "insecure_skip_all": false
+  },
+  "download": {
+    "cache_dir": "",
+    "max_retries": 3,
+    "retry_delay_ms": 1000,
+    "timeout_seconds": 600,
+    "chunk_size_mb": 10,
+    "verify_checksum": false
+  },
+  "behavior": {
+    "skip_existing": true,
+    "delete_after_sync": false,
+    "parallel_uploads": 0,
+    "delay_between_ms": 2000,
+    "include_patterns": [],
+    "exclude_patterns": [],
+    "arch_filter": "",
+    "stable_only": false
+  }
+}
